@@ -378,7 +378,7 @@ pub(crate) fn get_memory_extra_looking_sum_circuit<F: RichField + Extendable<D>,
 
     // This contains the `block_beneficiary`, `block_random`, `block_base_fee`,
     // `block_blob_base_fee` as well as `cur_hash`.
-    let block_fields_arrays: [(GlobalMetadata, &[Target]); 5] = [
+    let block_fields_arrays: [(GlobalMetadata, &[Target]); 7] = [
         (
             GlobalMetadata::BlockBeneficiary,
             &public_values.block_metadata.block_beneficiary,
@@ -394,6 +394,14 @@ pub(crate) fn get_memory_extra_looking_sum_circuit<F: RichField + Extendable<D>,
         (
             GlobalMetadata::BlockBlobBaseFee,
             &public_values.block_metadata.block_blob_base_fee,
+        ),
+        (
+            GlobalMetadata::BlockBlobGasUsed,
+            &public_values.block_metadata.block_blob_gas_used,
+        ),
+        (
+            GlobalMetadata::BlockExcessBlobGas,
+            &public_values.block_metadata.block_excess_blob_gas,
         ),
         (
             GlobalMetadata::BlockCurrentHash,
@@ -600,6 +608,8 @@ pub(crate) fn add_virtual_block_metadata<F: RichField + Extendable<D>, const D: 
     let block_base_fee = builder.add_virtual_public_input_arr();
     let block_gas_used = builder.add_virtual_public_input();
     let block_blob_base_fee = builder.add_virtual_public_input_arr();
+    let block_blob_gas_used = builder.add_virtual_public_input_arr();
+    let block_excess_blob_gas = builder.add_virtual_public_input_arr();
     let block_bloom = builder.add_virtual_public_input_arr();
     BlockMetadataTarget {
         block_beneficiary,
@@ -612,6 +622,8 @@ pub(crate) fn add_virtual_block_metadata<F: RichField + Extendable<D>, const D: 
         block_base_fee,
         block_gas_used,
         block_blob_base_fee,
+        block_blob_gas_used,
+        block_excess_blob_gas,
         block_bloom,
     }
 }
