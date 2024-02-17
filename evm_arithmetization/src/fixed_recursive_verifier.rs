@@ -770,6 +770,20 @@ where
 
         // Connect lhs `gas_used_after` with rhs `gas_used_before`.
         builder.connect(lhs.gas_used_after, rhs.gas_used_before);
+
+        // Connect the blob gas used in public values to the lhs and rhs values
+        // correctly.
+        for i in 0..2 {
+            builder.connect(pvs.blob_gas_used_before[i], lhs.blob_gas_used_before[i]);
+        }
+        for i in 0..2 {
+            builder.connect(pvs.blob_gas_used_after[i], rhs.blob_gas_used_after[i]);
+        }
+
+        // Connect lhs `blob_gas_used_after` with rhs `blob_gas_used_before`.
+        for i in 0..2 {
+            builder.connect(lhs.blob_gas_used_after[i], rhs.blob_gas_used_before[i]);
+        }
     }
 
     fn add_agg_child(
@@ -970,6 +984,12 @@ where
             x.block_metadata.block_gas_used,
             x.extra_block_data.gas_used_after,
         );
+        for i in 0..2 {
+            builder.connect(
+                x.block_metadata.block_blob_gas_used[i],
+                x.extra_block_data.blob_gas_used_after[i],
+            );
+        }
     }
 
     fn connect_initial_values_block(builder: &mut CircuitBuilder<F, D>, x: &PublicValuesTarget)
@@ -980,6 +1000,10 @@ where
         builder.assert_zero(x.extra_block_data.txn_number_before);
         // The initial gas used is 0.
         builder.assert_zero(x.extra_block_data.gas_used_before);
+        // The initial blob gas used is 0.
+        for i in 0..2 {
+            builder.assert_zero(x.extra_block_data.blob_gas_used_before[i]);
+        }
 
         // The transactions and receipts tries are empty at the beginning of the block.
         let initial_trie = HashedPartialTrie::from(Node::Empty).hash();
@@ -1251,6 +1275,8 @@ where
                 txn_number_after: rhs_public_values.extra_block_data.txn_number_after,
                 gas_used_before: lhs_public_values.extra_block_data.gas_used_before,
                 gas_used_after: rhs_public_values.extra_block_data.gas_used_after,
+                blob_gas_used_before: lhs_public_values.extra_block_data.blob_gas_used_before,
+                blob_gas_used_after: rhs_public_values.extra_block_data.blob_gas_used_after,
             },
             block_metadata: rhs_public_values.block_metadata,
             block_hashes: rhs_public_values.block_hashes,

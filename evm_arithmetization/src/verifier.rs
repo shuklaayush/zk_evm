@@ -219,6 +219,14 @@ where
             public_values.extra_block_data.gas_used_after,
         ),
         (
+            GlobalMetadata::BlockBlobGasUsedBefore,
+            public_values.extra_block_data.blob_gas_used_before,
+        ),
+        (
+            GlobalMetadata::BlockBlobGasUsedAfter,
+            public_values.extra_block_data.blob_gas_used_after,
+        ),
+        (
             GlobalMetadata::StateTrieRootDigestBefore,
             h2u(public_values.trie_roots_before.state_root),
         ),
@@ -375,6 +383,14 @@ pub(crate) mod debug_utils {
             (
                 GlobalMetadata::BlockGasUsedAfter,
                 public_values.extra_block_data.gas_used_after,
+            ),
+            (
+                GlobalMetadata::BlockBlobGasUsedBefore,
+                public_values.extra_block_data.blob_gas_used_before,
+            ),
+            (
+                GlobalMetadata::BlockBlobGasUsedAfter,
+                public_values.extra_block_data.blob_gas_used_after,
             ),
             (
                 GlobalMetadata::StateTrieRootDigestBefore,

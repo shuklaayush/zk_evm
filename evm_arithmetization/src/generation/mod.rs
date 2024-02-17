@@ -48,6 +48,13 @@ pub struct GenerationInputs {
     /// The exact gas used by the current transaction is `gas_used_after` -
     /// `gas_used_before`.
     pub gas_used_after: U256,
+    /// The cumulative blob gas used through the execution of all transactions
+    /// prior the current one.
+    pub blob_gas_used_before: U256,
+    /// The cumulative blob gas used after the execution of the current
+    /// transaction. The exact blob gas used by the current transaction is
+    /// `blob_gas_used_after` - `blob_gas_used_before`.
+    pub blob_gas_used_after: U256,
 
     /// A None would yield an empty proof, otherwise this contains the encoding
     /// of a transaction.
@@ -141,6 +148,14 @@ fn apply_metadata_and_tries_memops<F: RichField + Extendable<D>, const D: usize>
         ),
         (GlobalMetadata::BlockGasUsedBefore, inputs.gas_used_before),
         (GlobalMetadata::BlockGasUsedAfter, inputs.gas_used_after),
+        (
+            GlobalMetadata::BlockBlobGasUsedBefore,
+            inputs.blob_gas_used_before,
+        ),
+        (
+            GlobalMetadata::BlockBlobGasUsedAfter,
+            inputs.blob_gas_used_after,
+        ),
         (GlobalMetadata::TxnNumberBefore, inputs.txn_number_before),
         (
             GlobalMetadata::TxnNumberAfter,
@@ -295,6 +310,7 @@ pub fn generate_traces<F: RichField + Extendable<D>, const D: usize>(
     };
 
     let gas_used_after = read_metadata(GlobalMetadata::BlockGasUsedAfter);
+    let blob_gas_used_after = read_metadata(GlobalMetadata::BlockBlobGasUsedAfter);
     let txn_number_after = read_metadata(GlobalMetadata::TxnNumberAfter);
 
     let extra_block_data = ExtraBlockData {
@@ -303,6 +319,8 @@ pub fn generate_traces<F: RichField + Extendable<D>, const D: usize>(
         txn_number_after,
         gas_used_before: inputs.gas_used_before,
         gas_used_after,
+        blob_gas_used_before: inputs.blob_gas_used_before,
+        blob_gas_used_after,
     };
 
     let public_values = PublicValues {

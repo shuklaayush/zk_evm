@@ -377,8 +377,9 @@ pub(crate) fn get_memory_extra_looking_sum_circuit<F: RichField + Extendable<D>,
     ];
 
     // This contains the `block_beneficiary`, `block_random`, `block_base_fee`,
-    // `block_blob_base_fee` as well as `cur_hash`.
-    let block_fields_arrays: [(GlobalMetadata, &[Target]); 7] = [
+    // `block_blob_base_fee`, `block_excess_blob_gas`, `blob_gas_used_before`,
+    // `blob_gas_used_after`,  as well as `cur_hash`.
+    let block_fields_arrays: [(GlobalMetadata, &[Target]); 9] = [
         (
             GlobalMetadata::BlockBeneficiary,
             &public_values.block_metadata.block_beneficiary,
@@ -402,6 +403,14 @@ pub(crate) fn get_memory_extra_looking_sum_circuit<F: RichField + Extendable<D>,
         (
             GlobalMetadata::BlockExcessBlobGas,
             &public_values.block_metadata.block_excess_blob_gas,
+        ),
+        (
+            GlobalMetadata::BlockBlobGasUsedBefore,
+            &public_values.extra_block_data.blob_gas_used_before,
+        ),
+        (
+            GlobalMetadata::BlockBlobGasUsedAfter,
+            &public_values.extra_block_data.blob_gas_used_after,
         ),
         (
             GlobalMetadata::BlockCurrentHash,
@@ -646,12 +655,16 @@ pub(crate) fn add_virtual_extra_block_data<F: RichField + Extendable<D>, const D
     let txn_number_after = builder.add_virtual_public_input();
     let gas_used_before = builder.add_virtual_public_input();
     let gas_used_after = builder.add_virtual_public_input();
+    let blob_gas_used_before = builder.add_virtual_public_input_arr();
+    let blob_gas_used_after = builder.add_virtual_public_input_arr();
     ExtraBlockDataTarget {
         checkpoint_state_trie_root,
         txn_number_before,
         txn_number_after,
         gas_used_before,
         gas_used_after,
+        blob_gas_used_before,
+        blob_gas_used_after,
     }
 }
 
@@ -785,7 +798,7 @@ where
         block_metadata_target.block_chain_id,
         u256_to_u32(block_metadata.block_chain_id)?,
     );
-    // Basefee fits in 2 limbs
+    // BaseFee fits in 2 limbs
     let basefee = u256_to_u64(block_metadata.block_base_fee)?;
     witness.set_target(block_metadata_target.block_base_fee[0], basefee.0);
     witness.set_target(block_metadata_target.block_base_fee[1], basefee.1);
@@ -793,10 +806,30 @@ where
         block_metadata_target.block_gas_used,
         u256_to_u32(block_metadata.block_gas_used)?,
     );
-    // Blobbasefee fits in 2 limbs
+    // BlobBaseFee fits in 2 limbs
     let blob_basefee = u256_to_u64(block_metadata.block_blob_base_fee)?;
     witness.set_target(block_metadata_target.block_blob_base_fee[0], blob_basefee.0);
     witness.set_target(block_metadata_target.block_blob_base_fee[1], blob_basefee.1);
+    // BlobGasUsed fits in 2 limbs
+    let blob_gas_used = u256_to_u64(block_metadata.block_blob_gas_used)?;
+    witness.set_target(
+        block_metadata_target.block_blob_gas_used[0],
+        blob_gas_used.0,
+    );
+    witness.set_target(
+        block_metadata_target.block_blob_gas_used[1],
+        blob_gas_used.1,
+    );
+    // ExcessBlobGas fits in 2 limbs
+    let excess_blob_gas = u256_to_u64(block_metadata.block_excess_blob_gas)?;
+    witness.set_target(
+        block_metadata_target.block_excess_blob_gas[0],
+        excess_blob_gas.0,
+    );
+    witness.set_target(
+        block_metadata_target.block_excess_blob_gas[1],
+        excess_blob_gas.1,
+    );
     let mut block_bloom_limbs = [F::ZERO; 64];
     for (i, limbs) in block_bloom_limbs.chunks_exact_mut(8).enumerate() {
         limbs.copy_from_slice(&u256_limbs(block_metadata.block_bloom[i]));
@@ -848,6 +881,14 @@ where
     );
     witness.set_target(ed_target.gas_used_before, u256_to_u32(ed.gas_used_before)?);
     witness.set_target(ed_target.gas_used_after, u256_to_u32(ed.gas_used_after)?);
+    // BlobGasUsedBefore fits in 2 limbs
+    let blob_gas_used_before = u256_to_u64(ed.blob_gas_used_before)?;
+    witness.set_target(ed_target.blob_gas_used_before[0], blob_gas_used_before.0);
+    witness.set_target(ed_target.blob_gas_used_before[1], blob_gas_used_before.1);
+    // BlobGasUsedAfter fits in 2 limbs
+    let blob_gas_used_after = u256_to_u64(ed.blob_gas_used_after)?;
+    witness.set_target(ed_target.blob_gas_used_after[0], blob_gas_used_after.0);
+    witness.set_target(ed_target.blob_gas_used_after[1], blob_gas_used_after.1);
 
     Ok(())
 }

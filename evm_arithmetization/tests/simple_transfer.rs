@@ -147,6 +147,8 @@ fn test_simple_transfer() -> anyhow::Result<()> {
         txn_number_before: 0.into(),
         gas_used_before: 0.into(),
         gas_used_after: 21032.into(),
+        blob_gas_used_before: 0.into(),
+        blob_gas_used_after: 0.into(),
         block_hashes: BlockHashes {
             prev_hashes: vec![H256::default(); 256],
             cur_hash: H256::default(),

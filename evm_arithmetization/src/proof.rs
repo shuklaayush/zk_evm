@@ -255,6 +255,13 @@ pub struct ExtraBlockData {
     /// It should match the `block_gas_used` value after execution of the
     /// last transaction in a block.
     pub gas_used_after: U256,
+    /// The accumulated blob gas used prior execution of the local state
+    /// transition, starting at 0 for the initial transaction of a block.
+    pub blob_gas_used_before: U256,
+    /// The accumulated blob gas used after execution of the local state
+    /// transition. It should match the `block_gas_used` value after
+    /// execution of the last transaction in a block.
+    pub blob_gas_used_after: U256,
 }
 
 impl ExtraBlockData {
@@ -266,6 +273,8 @@ impl ExtraBlockData {
         let txn_number_after = pis[9].to_canonical_u64().into();
         let gas_used_before = pis[10].to_canonical_u64().into();
         let gas_used_after = pis[11].to_canonical_u64().into();
+        let blob_gas_used_before = pis[12].to_canonical_u64().into();
+        let blob_gas_used_after = pis[13].to_canonical_u64().into();
 
         Self {
             checkpoint_state_trie_root,
@@ -273,6 +282,8 @@ impl ExtraBlockData {
             txn_number_after,
             gas_used_before,
             gas_used_after,
+            blob_gas_used_before,
+            blob_gas_used_after,
         }
     }
 }
@@ -360,12 +371,16 @@ impl PublicValuesTarget {
             txn_number_after,
             gas_used_before,
             gas_used_after,
+            blob_gas_used_before,
+            blob_gas_used_after,
         } = self.extra_block_data;
         buffer.write_target_array(&checkpoint_state_trie_root)?;
         buffer.write_target(txn_number_before)?;
         buffer.write_target(txn_number_after)?;
         buffer.write_target(gas_used_before)?;
         buffer.write_target(gas_used_after)?;
+        buffer.write_target_array(&blob_gas_used_before)?;
+        buffer.write_target_array(&blob_gas_used_after)?;
 
         Ok(())
     }
@@ -411,6 +426,8 @@ impl PublicValuesTarget {
             txn_number_after: buffer.read_target()?,
             gas_used_before: buffer.read_target()?,
             gas_used_after: buffer.read_target()?,
+            blob_gas_used_before: buffer.read_target_array()?,
+            blob_gas_used_after: buffer.read_target_array()?,
         };
 
         Ok(Self {
@@ -821,11 +838,19 @@ pub struct ExtraBlockDataTarget {
     /// transition. It should match the `block_gas_used` value after
     /// execution of the last transaction in a block.
     pub gas_used_after: Target,
+    /// `Target`s for the accumulated blob gas used prior execution of the local
+    /// state transition, starting at 0 for the initial transaction of a
+    /// block.
+    pub blob_gas_used_before: [Target; 2],
+    /// `Target`s for the accumulated blob gas used after execution of the local
+    /// state transition. It should match the `block_blob_gas_used` value
+    /// after execution of the last transaction in a block.
+    pub blob_gas_used_after: [Target; 2],
 }
 
 impl ExtraBlockDataTarget {
     /// Number of `Target`s required for the extra block data.
-    const SIZE: usize = 12;
+    const SIZE: usize = 16;
 
     /// Extracts the extra block data `Target`s from the public input `Target`s.
     /// The provided `pis` should start with the extra vblock data.
@@ -835,6 +860,8 @@ impl ExtraBlockDataTarget {
         let txn_number_after = pis[9];
         let gas_used_before = pis[10];
         let gas_used_after = pis[11];
+        let blob_gas_used_before = pis[12..14].try_into().unwrap();
+        let blob_gas_used_after = pis[14..16].try_into().unwrap();
 
         Self {
             checkpoint_state_trie_root,
@@ -842,6 +869,8 @@ impl ExtraBlockDataTarget {
             txn_number_after,
             gas_used_before,
             gas_used_after,
+            blob_gas_used_before,
+            blob_gas_used_after,
         }
     }
 
@@ -869,6 +898,20 @@ impl ExtraBlockDataTarget {
             txn_number_after: builder.select(condition, ed0.txn_number_after, ed1.txn_number_after),
             gas_used_before: builder.select(condition, ed0.gas_used_before, ed1.gas_used_before),
             gas_used_after: builder.select(condition, ed0.gas_used_after, ed1.gas_used_after),
+            blob_gas_used_before: core::array::from_fn(|i| {
+                builder.select(
+                    condition,
+                    ed0.blob_gas_used_before[i],
+                    ed1.blob_gas_used_before[i],
+                )
+            }),
+            blob_gas_used_after: core::array::from_fn(|i| {
+                builder.select(
+                    condition,
+                    ed0.blob_gas_used_after[i],
+                    ed1.blob_gas_used_after[i],
+                )
+            }),
         }
     }
 
@@ -889,5 +932,11 @@ impl ExtraBlockDataTarget {
         builder.connect(ed0.txn_number_after, ed1.txn_number_after);
         builder.connect(ed0.gas_used_before, ed1.gas_used_before);
         builder.connect(ed0.gas_used_after, ed1.gas_used_after);
+        for i in 0..2 {
+            builder.connect(ed0.blob_gas_used_before[i], ed1.blob_gas_used_before[i]);
+        }
+        for i in 0..2 {
+            builder.connect(ed0.blob_gas_used_after[i], ed1.blob_gas_used_after[i]);
+        }
     }
 }

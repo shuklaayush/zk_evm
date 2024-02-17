@@ -228,6 +228,8 @@ fn test_log_opcodes() -> anyhow::Result<()> {
         gas_used_before: 0.into(),
         gas_used_after: gas_used.into(),
 
+        blob_gas_used_before: 0.into(),
+        blob_gas_used_after: 0.into(),
         block_hashes: BlockHashes {
             prev_hashes: vec![H256::default(); 256],
             cur_hash: H256::default(),
@@ -438,6 +440,8 @@ fn test_log_with_aggreg() -> anyhow::Result<()> {
         txn_number_before: 0.into(),
         gas_used_before: 0.into(),
         gas_used_after: 21000u64.into(),
+        blob_gas_used_before: 0.into(),
+        blob_gas_used_after: 0.into(),
         block_hashes: BlockHashes {
             prev_hashes: block_hashes.clone(),
             cur_hash: block_1_hash,
@@ -567,6 +571,8 @@ fn test_log_with_aggreg() -> anyhow::Result<()> {
         txn_number_before: 1.into(),
         gas_used_before: gas_used_second,
         gas_used_after: receipt.cum_gas_used,
+        blob_gas_used_before: 0.into(),
+        blob_gas_used_after: 0.into(),
         block_hashes: BlockHashes {
             prev_hashes: block_hashes.clone(),
             cur_hash: block_1_hash,
@@ -633,6 +639,8 @@ fn test_log_with_aggreg() -> anyhow::Result<()> {
         txn_number_before: 0.into(),
         gas_used_before: 0.into(),
         gas_used_after: 0.into(),
+        blob_gas_used_before: 0.into(),
+        blob_gas_used_after: 0.into(),
         block_hashes: BlockHashes {
             prev_hashes: block_hashes,
             cur_hash: block_2_hash,

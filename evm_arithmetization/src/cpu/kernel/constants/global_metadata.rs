@@ -53,10 +53,14 @@ pub(crate) enum GlobalMetadata {
     BlockBlobGasUsed,
     BlockExcessBlobGas,
     BlockGasUsed,
-    /// Before current transactions block values.
+    /// Accumulated gas used before current transactions.
     BlockGasUsedBefore,
-    /// After current transactions block values.
+    /// Accumulated gas used after current transactions.
     BlockGasUsedAfter,
+    /// Accumulated blob gas used before current transactions.
+    BlockBlobGasUsedBefore,
+    /// Accumulated blob gas used after current transactions.
+    BlockBlobGasUsedAfter,
     /// Current block header hash
     BlockCurrentHash,
 
@@ -108,7 +112,7 @@ pub(crate) enum GlobalMetadata {
 }
 
 impl GlobalMetadata {
-    pub(crate) const COUNT: usize = 53;
+    pub(crate) const COUNT: usize = 55;
 
     /// Unscales this virtual offset by their respective `Segment` value.
     pub(crate) const fn unscale(&self) -> usize {
@@ -144,6 +148,8 @@ impl GlobalMetadata {
             Self::BlockExcessBlobGas,
             Self::BlockGasUsedBefore,
             Self::BlockGasUsedAfter,
+            Self::BlockBlobGasUsedBefore,
+            Self::BlockBlobGasUsedAfter,
             Self::RefundCounter,
             Self::AccessedAddressesLen,
             Self::AccessedStorageKeysLen,
@@ -203,6 +209,8 @@ impl GlobalMetadata {
             Self::BlockGasUsed => "GLOBAL_METADATA_BLOCK_GAS_USED",
             Self::BlockGasUsedBefore => "GLOBAL_METADATA_BLOCK_GAS_USED_BEFORE",
             Self::BlockGasUsedAfter => "GLOBAL_METADATA_BLOCK_GAS_USED_AFTER",
+            Self::BlockBlobGasUsedBefore => "GLOBAL_METADATA_BLOCK_BLOB_GAS_USED_BEFORE",
+            Self::BlockBlobGasUsedAfter => "GLOBAL_METADATA_BLOCK_BLOB_GAS_USED_AFTER",
             Self::BlockCurrentHash => "GLOBAL_METADATA_BLOCK_CURRENT_HASH",
             Self::RefundCounter => "GLOBAL_METADATA_REFUND_COUNTER",
             Self::AccessedAddressesLen => "GLOBAL_METADATA_ACCESSED_ADDRESSES_LEN",

@@ -324,6 +324,14 @@ impl<'a, F: Field> Interpreter<'a, F> {
             ),
             (GlobalMetadata::BlockGasUsedBefore, inputs.gas_used_before),
             (GlobalMetadata::BlockGasUsedAfter, inputs.gas_used_after),
+            (
+                GlobalMetadata::BlockBlobGasUsedBefore,
+                inputs.blob_gas_used_before,
+            ),
+            (
+                GlobalMetadata::BlockBlobGasUsedAfter,
+                inputs.blob_gas_used_after,
+            ),
             (GlobalMetadata::TxnNumberBefore, inputs.txn_number_before),
             (
                 GlobalMetadata::TxnNumberAfter,
